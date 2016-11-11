@@ -11,12 +11,14 @@ abstract class Device {
     String name;
     Date date;
     boolean color;
+    int quantity;
 
     void save(PrintStream printStream){
         printStream.println(this.sku);
         printStream.println(this.name);
         printStream.println(AccountingDevices.format.format(this.date));
         printStream.println(this.color);
+        printStream.println(this.quantity);
     }
 
     Device load(BufferedReader reader) throws IOException, ParseException {
@@ -24,6 +26,7 @@ abstract class Device {
         this.name = reader.readLine();
         this.date = AccountingDevices.format.parse(reader.readLine());
         this.color = Boolean.parseBoolean(reader.readLine());
+        this.quantity = Integer.parseInt(reader.readLine());
         return this;
     }
 }
