@@ -1,8 +1,11 @@
 package ru.javaprgmt.week3;
 
-import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.ParseException;
 
-public class Printer extends Device {
+class Printer extends Device {
     boolean network;
 //    MountingType mountingType;
 
@@ -14,7 +17,16 @@ public class Printer extends Device {
 
 
     @Override
-    void save(OutputStream outputStream) {
+    void save(PrintStream printStream) {
+        printStream.println('p');
+        super.save(printStream);
+        printStream.println(this.network);
+    }
 
+    @Override
+    Printer load(BufferedReader reader) throws IOException, ParseException {
+        super.load(reader);
+        this.network = Boolean.parseBoolean(reader.readLine());
+        return this;
     }
 }

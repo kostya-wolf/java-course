@@ -7,18 +7,16 @@ import java.util.*;
 
 public class AccountingDevices {
 
+    static SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+
     private static HashMap<Integer, Device> devices = new HashMap<>();
     private static File dbDevices = new File("dbDevices.txt");
 
     static {
         try
         {
-            if (dbDevices.exists()){
-
-            }
-            else {
-                dbDevices.createNewFile();
-            }
+            if (!dbDevices.exists()) dbDevices.createNewFile();
+            load();
         }
         catch (IOException e){
             System.out.println("Не удалось создать файл dbDevices.txt");
@@ -43,25 +41,70 @@ public class AccountingDevices {
         PRINTER
     }
 
-    private static SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-
-    public void save() {
+    public static void save() {
         try {
             OutputStream outputStream = new FileOutputStream(dbDevices);
+            PrintStream printStream = new PrintStream(outputStream);
             for (Map.Entry<Integer, Device> pair: devices.entrySet())
             {
                 Device dev = pair.getValue();
                 if (dev instanceof Monitor){
-                    ((Monitor)dev).save(outputStream);
+                    ((Monitor)dev).save(printStream);
+                }
+                else if (dev instanceof Scanner){
+                    ((Scanner)dev).save(printStream);
+                }
+                else if (dev instanceof Printer){
+                    ((Printer)dev).save(printStream);
                 }
             }
             outputStream.flush();
+            outputStream.close();
         }
         catch (FileNotFoundException e){
             System.out.println("Файл не найден");
         }
         catch (IOException e){
             System.out.println("Ошибка записи в файл");
+        }
+    }
+
+    public static void load() {
+        try {
+            InputStream inputStream = new FileInputStream(dbDevices);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String s;
+            Device d;
+            while ((s = reader.readLine()) != null){
+                switch (s){
+                    case "m": {
+                            d = new Monitor().load(reader);
+                            devices.put(d.sku, d);
+                        }
+                        break;
+                    case "s": {
+                            d = new Scanner().load(reader);
+                            devices.put(d.sku, d);
+                        }
+                        break;
+                    case "p": {
+                            d = new Printer().load(reader);
+                            devices.put(d.sku, d);
+                        }
+                        break;
+                }
+            }
+        }
+        catch (FileNotFoundException e){
+            System.out.println("Файл не найден");
+        }
+        catch (IOException e){
+            System.out.println("Ошибка в чтении файла");
+        }
+        catch (ParseException e)
+        {
+            System.out.println("Значение параметра date в файле некорректно");
+            return;
         }
     }
 
@@ -201,7 +244,7 @@ public class AccountingDevices {
                                     printer.network = Boolean.parseBoolean(network);
                                 }
                                 else {
-                                    System.out.println("Значение параметра --color указано некорректно");
+                                    System.out.println("Значение параметра --network указано некорректно");
                                     return;
                                 }
 
@@ -276,6 +319,7 @@ public class AccountingDevices {
                 }
             }
             else throw new ArrayIndexOutOfBoundsException();
+            save();
         }
         catch (ArrayIndexOutOfBoundsException e){
             System.out.println("Введите команду в формате: КОМАНДА {--ПАРАМЕТР ЗНАЧЕНИЕ}...");
