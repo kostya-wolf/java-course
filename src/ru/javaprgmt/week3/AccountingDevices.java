@@ -23,7 +23,7 @@ public class AccountingDevices {
         }
     }
 
-    private static HashMap<String, String> requiredParameters = new HashMap<String, String>();
+    private static HashMap<String, String> requiredParameters = new HashMap<>();
     static {
         requiredParameters.put("--type", null);
         requiredParameters.put("--sku", null);
@@ -49,15 +49,7 @@ public class AccountingDevices {
             for (Map.Entry<Integer, Device> pair: devices.entrySet())
             {
                 Device dev = pair.getValue();
-                if (dev instanceof Monitor){
-                    ((Monitor)dev).save(printStream);
-                }
-                else if (dev instanceof Scanner){
-                    ((Scanner)dev).save(printStream);
-                }
-                else if (dev instanceof Printer){
-                    ((Printer)dev).save(printStream);
-                }
+                dev.save(printStream);
             }
             outputStream.flush();
             outputStream.close();
@@ -105,7 +97,6 @@ public class AccountingDevices {
         catch (ParseException e)
         {
             System.out.println("Значение параметра date в файле некорректно" + e);
-            return;
         }
     }
 
@@ -136,9 +127,7 @@ public class AccountingDevices {
         }
         catch (ArrayIndexOutOfBoundsException e){
             System.out.println("Введите команду в формате: КОМАНДА {--ПАРАМЕТР ЗНАЧЕНИЕ}...");
-            return;
         }
-
     }
 
     public static void add(String[] args){
@@ -172,11 +161,10 @@ public class AccountingDevices {
 
         StringBuilder missingParams = new StringBuilder();
         for (Map.Entry<String,String> pair: requiredParameters.entrySet()) {
-            if (pair.getValue() == null && (!((deviceType == DeviceType.PRINTER) && (pair.getKey().equals("--network"))))) missingParams.append(pair.getKey()).append(',').append(' ');
+            if (pair.getValue() == null && (!((deviceType == DeviceType.SCANNER) && (pair.getKey().equals("--network"))))) missingParams.append(pair.getKey()).append(',').append(' ');
         }
         if (missingParams.length() > 0){
             System.out.println("Не указаны обязательные параметры: "+missingParams.substring(0, missingParams.length()-2));
-            return;
         }
         else {
             if (deviceType == DeviceType.MONITOR){
@@ -345,7 +333,7 @@ public class AccountingDevices {
                 }
 
                 String netw = requiredParameters.get("--network");
-                if (netw.length() > 0){
+                if (netw != null){
                     String[] network = netw.split(",");
                     for (int i=0; i<network.length; i++){
                         if ("ETHERNET".equals(network[i])){
@@ -398,7 +386,6 @@ public class AccountingDevices {
             }
             catch (RuntimeException e){
                 System.out.println("Введите команду в формате: delete {--sku число}");
-                return;
             }
         }
         else {
@@ -411,13 +398,21 @@ public class AccountingDevices {
             System.out.println("БД не содержит записей");
         }
         else {
-            StringBuilder deviceDesr;
             for (Map.Entry<Integer,Device> pair: devices.entrySet()) {
+
+                StringBuilder specifDesc = new StringBuilder();
+
                 Device d = pair.getValue();
 
                 String type="";
                 String kind="";
-                String inch="";
+                String inch;
+                String items;
+                int ost10 = d.quantity % 10;
+                int ost100 = d.quantity % 100;
+                if ((ost10 == 1) && (ost100 != 11)) items="штука";
+                else if ((ost10 >= 2 && ost10 <= 4) && !(ost100 >= 12 && ost100 <= 14)) items="штуки";
+                else items="штук";
 
 
                 if (d instanceof Monitor) {
@@ -427,29 +422,34 @@ public class AccountingDevices {
                     else if (m.kind == Monitor.Kind.TUBE) kind="ЭЛТ,";
                     else if (m.kind == Monitor.Kind.PROJECTOR) kind="проектор,";
 
-                    int ost10 = m.size % 10;
-                    int ost100 = m.size % 100;
+                    ost10 = m.size % 10;
+                    ost100 = m.size % 100;
                     if ((ost10 == 1) && (ost100 != 11)) inch=m.size+" дюйм";
                     else if ((ost10 >= 2 && ost10 <= 4) && !(ost100 >= 12 && ost100 <= 14)) inch=m.size+" дюйма";
                     else inch=m.size+" дюймов";
+
+                    specifDesc.append(kind).append(' ').append(inch);
                 }
-                else if (d instanceof Scanner) type="Сканер";
-                else if (d instanceof Printer) type="Принтер";
+                else if (d instanceof Scanner) {
+                    type="Сканер";
+                    Scanner s = (Scanner)d;
+                    if (s.network[0] || s.network[1]) {
+                        specifDesc.append("сетевой");
+                        if (s.network[0]) specifDesc.append(", с Ethernet");
+                        if (s.network[1]) specifDesc.append(", с WiFi");
+                    }
+                    else specifDesc.append("локальный");
+                }
+                else if (d instanceof Printer) {
+                    type="Принтер";
+                    Printer p = (Printer)d;
+                    specifDesc.append(p.network ? "сетевой" : "локальный");
+                }
 
-                String items;
-                int ost10 = d.quantity % 10;
-                int ost100 = d.quantity % 100;
-                if ((ost10 == 1) && (ost100 != 11)) items="штука";
-                else if ((ost10 >= 2 && ost10 <= 4) && !(ost100 >= 12 && ost100 <= 14)) items="штуки";
-                else items="штук";
-
-
-
-
-                deviceDesr = new StringBuilder(); // {ДАТА} {КОЛИЧЕСТВО} {ТИП} {ИМЯ} - {...}
-                deviceDesr.append(format.format(d.date)).append(' ').append(d.quantity).append(' ').append(items).append(' ').append(type).append(' ').append(d.name).append(" - ");
-                deviceDesr.append(d.color ? "цветной" : "ч/б").append(' ').append(kind).append(' ').append(inch);
-                System.out.println(deviceDesr);
+                StringBuilder deviceDesc = new StringBuilder();
+                deviceDesc.append(format.format(d.date)).append(' ').append(d.quantity).append(' ').append(items).append(' ').append(type).append(' ').append(d.name).append(" - ");
+                deviceDesc.append(d.color ? "цветной" : "ч/б").append(' ').append(specifDesc);
+                System.out.println(deviceDesc);
             }
         }
     }
