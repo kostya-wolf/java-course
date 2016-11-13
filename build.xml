@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<project name="Build the application for accounting devices" basedir=".">
+
+    <property name="src.dir" value="./src/ru/javaprgmt/week3"/>
+    <property name="classes.dir" value="./classes"/>
+
+
+    <target name="build" description="-compiles .java files and puts .class files to classes.dir">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false"/>
+    </target>
+
+
+    <target name="dist" depends="build" description="-creates app.jar file">
+        <jar destfile="app.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="ru.javaprgmt.week3.AccountingDevices" />
+            </manifest>
+        </jar>
+    </target>
+
+
+    <target name="clean" description="-removes app.jar and classes.dir with .class files">
+        <delete dir="${classes.dir}" />
+        <delete file="app.jar" />
+    </target>
+
+</project>

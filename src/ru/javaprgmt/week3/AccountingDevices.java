@@ -126,7 +126,7 @@ public class AccountingDevices {
             save();
         }
         catch (ArrayIndexOutOfBoundsException e){
-            System.out.println("Введите команду в формате: КОМАНДА {--ПАРАМЕТР ЗНАЧЕНИЕ}...");
+            System.out.println("Введите команду в формате: КОМАНДА {--ПАРАМЕТР значение}...");
         }
     }
 
@@ -155,7 +155,7 @@ public class AccountingDevices {
             return;
         }
         catch (NullPointerException e) {
-            System.out.println("Параметр type обязателен");
+            System.out.println("Параметр --type обязателен");
             return;
         }
 
