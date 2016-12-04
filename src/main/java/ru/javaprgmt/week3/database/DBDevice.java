@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class DBDevice {
     private static DBDevice database = new DBDevice();
-    private File dbDevices = new File("src\\ru\\javaprgmt\\week3\\database\\dbDevices.txt");
+    private File dbDevices = new File("dbDevices.txt");
 
     public HashMap<Integer, Device> devices = new HashMap<>();
 

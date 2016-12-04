@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="Build the application for accounting devices" basedir=".">
 
-    <property name="src.dir" value="./src/ru/javaprgmt/week3"/>
+    <property name="src.dir" value="./src/main/java/ru/javaprgmt/week3"/>
     <property name="classes.dir" value="./classes"/>
 
 

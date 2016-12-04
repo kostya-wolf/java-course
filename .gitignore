@@ -1,4 +1,5 @@
 *.iml
 .idea/
 out/
-src/ru/javaprgmt/week3/database/dbDevices.txt
+target/
+dbDevices.txt
